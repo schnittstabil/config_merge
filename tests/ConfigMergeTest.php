@@ -6,52 +6,53 @@ class ConfigMergeTest extends \PHPUnit_Framework_TestCase
 {
     public function testConfigMergeUsageExample()
     {
-        $target = [
-            'files' => ['src', 'tests'],
-            'opts' => [
-                'unicorns' => 0,
-                'leprechauns' => 666,
-            ],
-        ];
-        $source = [
-            'files' => ['target'],
-            'opts' => [
-                'unicorns' => 42,
-            ],
-        ];
-        $expected = [
-            'files' => ['target'],
-            'opts' => [
-                'unicorns' => 42,
-                'leprechauns' => 666,
-            ],
-        ];
+        $target = json_decode(<<<'EOD'
+    {
+        "files": ["src", "tests"],
+        "opts": {
+            "unicorns": 0,
+            "leprechauns": 666
+        }
+    }
+EOD
+        );
+        $source = json_decode(<<<'EOD'
+    {
+        "files": ["target"],
+        "opts": {
+            "unicorns": 42
+        }
+    }
+EOD
+        );
+        $expected = json_decode(<<<'EOD'
+    {
+        "files": ["target"],
+        "opts": {
+            "unicorns": 42,
+            "leprechauns": 666
+        }
+    }
+EOD
+        );
 
         $this->assertEquals($expected, config_merge($target, $source));
     }
 
-    public function testEmptyArraysShouldNotOverride()
+    public function testEmptyArraysShouldOverwrite()
     {
-        $target = [
-            'files' => ['src', 'tests'],
-        ];
-        $source = [];
-        $expected = $target;
+        $target = json_decode('{"files": ["src", "tests"]}');
+        $source = json_decode('{"files": []}');
+        $expected = $source;
 
         $this->assertEquals($expected, config_merge($target, $source));
     }
 
-    public function testNestedEmptyArraysShouldOverride()
+    public function testUndefinedPropertiesShouldBeSet()
     {
-        $target = [
-            'files' => ['src', 'tests'],
-        ];
-        $source = [
-            'files' => [],
-        ];
-        $expected = [
-            'files' => [],
-        ];
+        $target = json_decode('{}');
+        $source = json_decode('{"files": []}');
+        $expected = $source;
 
         $this->assertEquals($expected, config_merge($target, $source));
     }

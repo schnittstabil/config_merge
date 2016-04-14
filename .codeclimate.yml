@@ -4,7 +4,7 @@ engines:
   phpcodesniffer:
     enabled: true
   phpmd:
-    enabled: true
+    enabled: false
 ratings:
    paths:
    - "src/**/*"

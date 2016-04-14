@@ -17,29 +17,38 @@ $ composer require schnittstabil/config_merge
 ```php
 use function Schnittstabil\ConfigMerge\config_merge;
 
-config_merge(
-	[
-		'files' => ['src', 'tests'],
-		'opts' => [
-			'unicorns' => 0,
-			'leprechauns' => 666,
-		]
-	],
-	[
-		'files' => ['target'],
-		'opts' => [
-			'unicorns' => 42,
-		]
-	]
+$target = json_decode(<<<'EOD'
+{
+    "files": ["src", "tests"],
+    "opts": {
+        "unicorns": 0,
+        "leprechauns": 666
+    }
+}
+EOD
 );
+
+$source = json_decode(<<<'EOD'
+{
+    "files": ["target"],
+    "opts": {
+        "unicorns": 42
+    }
+}
+EOD
+);
+
+json_encode(config_merge($target, $source), JSON_PRETTY_PRINT);
 /* =>
-[
-	'files' => ['target'],
-	'opts' => [
-		'unicorns' => 42,
-		'leprechauns' => 666,
-	]
-]
+{
+    "files": [
+        "target"
+    ],
+    "opts": {
+        "unicorns": 42,
+        "leprechauns": 666
+    }
+}
 */
 ```
 
@@ -48,14 +57,15 @@ config_merge(
 
 ```php
 /**
- * Merge two config arrays.
+ * Merge two configs.
  *
- * @param array $target Target config array
- * @param array $source Source config array
+ * @param mixed $target       Target config
+ * @param mixed $source       Source config
+ * @param bool  $appendArrays if true use `array_merge`
  *
- * @return array The merged config
+ * @return mixed The merged config
  */
-function config_merge(array $target, array $source)
+function config_merge($target, $source, $appendArrays = false)
 ```
 
 

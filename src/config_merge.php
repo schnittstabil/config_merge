@@ -4,28 +4,33 @@ namespace Schnittstabil\ConfigMerge;
 
 if (!function_exists('Schnittstabil\ConfigMerge\config_merge')) {
     /**
-     * Merge two config arrays.
+     * Merge two configs.
      *
-     * @param array $target Target config array
-     * @param array $source Source config array
+     * @param mixed $target       Target config
+     * @param mixed $source       Source config
+     * @param bool  $appendArrays if true use `array_merge`
      *
-     * @return array The merged config
+     * @return mixed The merged config
      */
-    function config_merge(array $target, array $source)
+    function config_merge($target, $source, $appendArrays = false)
     {
-        if (!\Schnittstabil\ArraySome\array_some_key($target, 'is_string')) {
+        if (is_array($target) && is_array($source)) {
+            return $appendArrays ? array_merge($target, $source) : $source;
+        }
+
+        if (!is_object($target) || !is_object($source)) {
             return $source;
         }
 
-        foreach ($source as $key => $value) {
-            if (isset($target[$key]) || array_key_exists($key, $target)) {
-                if (is_array($value) && is_array($target[$key])) {
-                    $target[$key] = config_merge($target[$key], $value);
-                    continue;
-                }
+        $target = clone $target;
+
+        foreach (get_object_vars($source) as $key => $value) {
+            if (property_exists($target, $key)) {
+                $target->$key = config_merge($target->$key, $value);
+                continue;
             }
 
-            $target[$key] = $value;
+            $target->$key = $value;
         }
 
         return $target;
